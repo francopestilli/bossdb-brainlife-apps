@@ -45,6 +45,26 @@ def positive_triplet(value, name):
     return value
 
 
+def positive_integer(value, name):
+    if isinstance(value, bool):
+        fail(f"{name} must be a positive integer")
+    if isinstance(value, int):
+        integer_value = value
+    elif isinstance(value, float) and value.is_integer():
+        integer_value = int(value)
+    elif isinstance(value, str):
+        try:
+            integer_value = int(value)
+        except ValueError:
+            fail(f"{name} must be a positive integer")
+    else:
+        fail(f"{name} must be a positive integer")
+
+    if integer_value < 1:
+        fail(f"{name} must be a positive integer")
+    return str(integer_value)
+
+
 def read_config(config_path, default_graph_id):
     with open(config_path, encoding="utf-8") as config_file:
         config = json.load(config_file)
@@ -63,6 +83,7 @@ def read_config(config_path, default_graph_id):
     elif not isinstance(mip, str) or not mip:
         fail("mip must be a non-negative integer or a non-empty resolution string")
     block_size = positive_triplet(config.get("block_size", "64,64,32"), "block_size")
+    workers = positive_integer(config.get("workers", 1), "workers")
 
     bounds = []
     for name in ("z_start", "z_end", "enqueue_limit"):
@@ -83,6 +104,7 @@ def read_config(config_path, default_graph_id):
         z_start,
         z_end,
         enqueue_limit,
+        workers,
     )
 
 def fetch_json(url: str, timeout: int = 30):
